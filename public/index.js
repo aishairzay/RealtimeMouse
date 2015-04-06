@@ -5,6 +5,9 @@ $("document").ready(function(e){
   $("body").mousemove(function(e) {
     socket.emit('mouse-movement', {x: e.pageX, y: e.pageY});
   });
+  $("body").click(function(e) {
+    socket.emit('mouse-movement', {x: e.pageX, y: e.pageY});
+  });
 });
 
 socket.on('update-client-mouse', function(data){
@@ -19,7 +22,7 @@ socket.on('update-client-mouse', function(data){
     else{
       newExcitingAlerts();
     }
-    $("body").append('<img src="' + pic + '" height="16" width="16" id=' + data.socket + ' style="{position:absolute;z-index:' + z + ';}"></img>');
+    $("body").append('<img src="' + pic + '" height="15" width="15" id=' + data.socket + ' style="{position:absolute;z-index:' + z + ';}"></img>');
   }
   $('#' + data.socket).css({'position': 'absolute','left' : data.x + 'px', 'top' : data.y + 'px'});
 });
