@@ -69,6 +69,7 @@ $("document").ready(function(e){
 //--------------------------------------------------------
 
 socket.on('page-load', function(points){
+  newExcitingAlerts();
   for (var i = 0; i < points.length; i++) {
     var p = points[i];
     addNewPointToScreen(p.x, p.y, p.color);
