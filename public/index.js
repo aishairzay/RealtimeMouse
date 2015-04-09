@@ -1,36 +1,9 @@
 var socket = io();
 var mice = {};
+var mouseDown = false;
+var myColor = getRandomColor();
 
-$("document").ready(function(e){
-  $("body").mousemove(function(e) {
-    socket.emit('mouse-movement', {x: e.pageX, y: e.pageY});
-  });
-  $("body").click(function(e) {
-    socket.emit('mouse-movement', {x: e.pageX, y: e.pageY});
-  });
-});
-
-socket.on('update-client-mouse', function(data){
-  if(mice[data.socket] == undefined) {
-    mice[data.socket] = true;
-    var z = 2;
-    var pic = 'GoodDarkMousePointer.gif';
-    if(data.socket == socket.id) {
-      pic = 'GoodRedMousePointer.gif';
-      z = 1;
-    }
-    else{
-      newExcitingAlerts();
-    }
-    $("body").append('<img src="' + pic + '" height="15" width="15" id=' + data.socket + ' style="{position:absolute;z-index:' + z + ';}"></img>');
-  }
-  $('#' + data.socket).css({'position': 'absolute','left' : data.x + 'px', 'top' : data.y + 'px'});
-});
-
-socket.on('remove-client-mouse', function(socketId){
-  $('#' + socketId).remove();
-  delete mice[socketId];
-});
+//----------------------------------------------------------
 
 newExcitingAlerts = (function () {
   var oldTitle = document.title;
@@ -50,3 +23,66 @@ newExcitingAlerts = (function () {
     }
   };
 }());
+
+function getRandomColor() {
+    var letters = '0123456789ABCDEF'.split('');
+    var color = '#';
+    for (var i = 0; i < 6; i++ ) {
+        color += letters[Math.floor(Math.random() * 16)];
+    }
+    return color;
+}
+
+function addNewPointToScreen(x, y, color){
+  $(".canvas").append(
+    $('<div></div>')
+        .css('position', 'absolute')
+        .css('top', y + 'px')
+        .css('left', x + 'px')
+        .css('width', 10)
+        .css('height', 10)
+        .css('background-color', color)
+  );
+}
+
+//---------------------------------------------------------------
+
+$("document").ready(function(e){
+  $("#erase").click(function(){
+    socket.emit('clear-page');
+  });
+
+  $(".canvas").mousemove(function(e) {
+    if(mouseDown) {
+      socket.emit('point', {x: e.pageX, y: e.pageY, color: myColor});
+    }
+  });
+
+  $(".canvas").mousedown(function(e){
+    mouseDown = true;
+  });
+  $(".canvas").mouseup(function(e) {
+    mouseDown = false;
+  });
+
+});
+//--------------------------------------------------------
+
+socket.on('page-load', function(points){
+  for (var i = 0; i < points.length; i++) {
+    var p = points[i];
+    addNewPointToScreen(p.x, p.y, p.color);
+  }
+});
+
+socket.on('new-point', function(data){
+  var x = data.x;
+  var y = data.y;
+  var color = data.color;
+  addNewPointToScreen(x, y, color);
+});
+
+socket.on('erase', function() {
+  $(".canvas").empty();
+});
+
